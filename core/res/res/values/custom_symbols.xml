@@ -71,4 +71,7 @@
     
     <!-- Immersive UI mode toast messages -->
     <java-symbol type="string" name="immersive_ui_mode_notify_locked" />
+    
+    <!-- Whether the device supports Smart Pixels -->
+    <java-symbol type="bool" name="config_supportSmartPixels" />
 </resources>
