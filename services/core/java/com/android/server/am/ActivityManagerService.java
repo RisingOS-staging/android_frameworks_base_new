@@ -21176,4 +21176,9 @@ public class ActivityManagerService extends IActivityManager.Stub
                 "three_finger_gesture_active", 0) != 0;
         }
     }
+
+    @Override
+    public boolean shouldForceCutoutFullscreen(String packageName) {
+        return mActivityTaskManager.shouldForceCutoutFullscreen(packageName);
+    }
 }
