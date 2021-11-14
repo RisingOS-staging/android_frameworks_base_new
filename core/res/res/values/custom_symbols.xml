@@ -41,4 +41,7 @@
     <!-- Launcher restart dialog -->
     <java-symbol type="string" name="launcher_restart_title" />
     <java-symbol type="string" name="launcher_restart_message" />
+    
+    <!-- Whether devices suports in-display fingerprint when screen is off -->
+    <java-symbol type="bool" name="config_supportScreenOffUdfps" />
 </resources>
