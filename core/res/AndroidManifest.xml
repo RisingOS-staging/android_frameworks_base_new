@@ -855,6 +855,10 @@
     <!-- Pocket Mode -->
     <protected-broadcast android:name="org.rising.server.action.POCKET_STATE_CHANGED" />
 
+    <!-- GameSpace -->
+    <protected-broadcast android:name="io.chaldeaprjkt.gamespace.action.GAME_START" />
+    <protected-broadcast android:name="io.chaldeaprjkt.gamespace.action.GAME_STOP" />
+
     <!-- ====================================================================== -->
     <!--                          RUNTIME PERMISSIONS                           -->
     <!-- ====================================================================== -->
