@@ -22,9 +22,14 @@ import static com.android.systemui.qs.dagger.QSScopeModule.QS_USING_MEDIA_PLAYER
 
 import androidx.annotation.VisibleForTesting;
 
+import android.os.Handler;
+import android.os.UserHandle;
+import android.provider.Settings;
+
 import com.android.internal.logging.MetricsLogger;
 import com.android.internal.logging.UiEventLogger;
 import com.android.systemui.dump.DumpManager;
+import com.android.systemui.dagger.qualifiers.Main;
 import com.android.systemui.haptics.qs.QSLongPressEffect;
 import com.android.systemui.media.controls.domain.pipeline.interactor.MediaCarouselInteractor;
 import com.android.systemui.media.controls.ui.controller.MediaHierarchyManager;
@@ -36,6 +41,7 @@ import com.android.systemui.qs.logging.QSLogger;
 import com.android.systemui.res.R;
 import com.android.systemui.statusbar.policy.SplitShadeStateController;
 import com.android.systemui.util.leak.RotationUtils;
+import com.android.systemui.util.settings.SystemSettings;
 
 import kotlinx.coroutines.flow.StateFlow;
 
@@ -65,11 +71,13 @@ public class QuickQSPanelController extends QSPanelControllerBase<QuickQSPanel> 
             MetricsLogger metricsLogger, UiEventLogger uiEventLogger, QSLogger qsLogger,
             DumpManager dumpManager, SplitShadeStateController splitShadeStateController,
             Provider<QSLongPressEffect> longPressEffectProvider,
-            MediaCarouselInteractor mediaCarouselInteractor
+            MediaCarouselInteractor mediaCarouselInteractor,
+            @Main Handler mainHandler,
+            SystemSettings systemSettings
     ) {
         super(view, qsHost, qsCustomizerController, usingMediaPlayer, mediaHost, metricsLogger,
                 uiEventLogger, qsLogger, dumpManager, splitShadeStateController,
-                longPressEffectProvider);
+                longPressEffectProvider, mainHandler, systemSettings);
         mUsingCollapsedLandscapeMediaProvider = usingCollapsedLandscapeMediaProvider;
         mMediaCarouselInteractor = mediaCarouselInteractor;
     }

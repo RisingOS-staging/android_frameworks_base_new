@@ -21,6 +21,7 @@ import static com.android.systemui.media.dagger.MediaModule.QS_PANEL;
 import static com.android.systemui.qs.QSPanel.QS_SHOW_BRIGHTNESS;
 import static com.android.systemui.qs.dagger.QSScopeModule.QS_USING_MEDIA_PLAYER;
 
+import android.os.Handler;
 import android.provider.Settings;
 import android.view.MotionEvent;
 import android.view.View;
@@ -29,6 +30,7 @@ import androidx.annotation.Nullable;
 
 import com.android.internal.logging.MetricsLogger;
 import com.android.internal.logging.UiEventLogger;
+import com.android.systemui.dagger.qualifiers.Main;
 import com.android.systemui.dump.DumpManager;
 import com.android.systemui.haptics.qs.QSLongPressEffect;
 import com.android.systemui.media.controls.domain.pipeline.interactor.MediaCarouselInteractor;
@@ -46,6 +48,7 @@ import com.android.systemui.settings.brightness.BrightnessSliderController;
 import com.android.systemui.settings.brightness.MirrorController;
 import com.android.systemui.statusbar.phone.StatusBarKeyguardViewManager;
 import com.android.systemui.statusbar.policy.SplitShadeStateController;
+import com.android.systemui.util.settings.SystemSettings;
 
 import lineageos.providers.LineageSettings;
 
@@ -102,10 +105,11 @@ public class QSPanelController extends QSPanelControllerBase<QSPanel> {
             StatusBarKeyguardViewManager statusBarKeyguardViewManager,
             SplitShadeStateController splitShadeStateController,
             Provider<QSLongPressEffect> longPRessEffectProvider,
-            MediaCarouselInteractor mediaCarouselInteractor) {
+            MediaCarouselInteractor mediaCarouselInteractor,
+            @Main Handler mainHandler, SystemSettings systemSettings) {
         super(view, qsHost, qsCustomizerController, usingMediaPlayer, mediaHost,
                 metricsLogger, uiEventLogger, qsLogger, dumpManager, splitShadeStateController,
-                longPRessEffectProvider);
+                longPRessEffectProvider, mainHandler, systemSettings);
         mQsCustomizerController = qsCustomizerController;
         mQsTileRevealControllerFactory = qsTileRevealControllerFactory;
         mFalsingManager = falsingManager;
