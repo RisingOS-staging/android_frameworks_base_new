@@ -25,6 +25,7 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
 import android.content.res.TypedArray;
+import android.graphics.Color;
 import android.database.ContentObserver;
 import android.graphics.Rect;
 import android.icu.lang.UCharacter;
@@ -35,6 +36,7 @@ import android.os.Handler;
 import android.os.Parcelable;
 import android.os.SystemClock;
 import android.os.UserHandle;
+import android.provider.Settings;
 import android.text.Spannable;
 import android.text.SpannableStringBuilder;
 import android.text.TextUtils;
@@ -100,6 +102,7 @@ public class Clock extends TextView implements
     private boolean mClockAutoHide = false;
     private boolean mClockVisibleByPolicy = true;
     private boolean mClockVisibleByUser = getVisibility() == View.VISIBLE;
+    private boolean mClockBgOn;
 
     private boolean mAttached;
     private boolean mScreenReceiverRegistered;
@@ -175,6 +178,11 @@ public class Clock extends TextView implements
                         handleTaskStackListener(
                                 LineageSettings.System.getInt(mContext.getContentResolver(),
                                         LineageSettings.System.STATUS_BAR_CLOCK_AUTO_HIDE, 0) != 0);
+                    } else if (Settings.System.getUriFor(
+                            Settings.System.STATUSBAR_CLOCK_CHIP).equals(uri)) {
+                        mClockBgOn = Settings.System.getInt(
+                                mContext.getContentResolver(),
+                                Settings.System.STATUSBAR_CLOCK_CHIP, 0) != 0;
                     }
                 }
             };
@@ -249,8 +257,14 @@ public class Clock extends TextView implements
                     LineageSettings.System.getUriFor(
                             LineageSettings.System.STATUS_BAR_CLOCK_AUTO_HIDE),
                     false, mContentObserver);
+            mContext.getContentResolver().registerContentObserver(
+                    Settings.System.getUriFor(
+                            Settings.System.STATUSBAR_CLOCK_CHIP),
+                    false, mContentObserver);
             mContentObserver.onChange(false, LineageSettings.System.getUriFor(
                     LineageSettings.System.STATUS_BAR_CLOCK_AUTO_HIDE));
+            mContentObserver.onChange(false, Settings.System.getUriFor(
+                    Settings.System.STATUSBAR_CLOCK_CHIP));
             mCommandQueue.addCallback(this);
             mUserTracker.addCallback(mUserChangedCallback, mContext.getMainExecutor());
             mCurrentUserId = mUserTracker.getUserId();
@@ -430,7 +444,7 @@ public class Clock extends TextView implements
     @Override
     public void onDarkChanged(ArrayList<Rect> areas, float darkIntensity, int tint) {
         mNonAdaptedColor = DarkIconDispatcher.getTint(areas, this, tint);
-        setTextColor(mNonAdaptedColor);
+        setTextColor(mClockBgOn ? Color.WHITE : mNonAdaptedColor);
     }
 
     // Update text color based when shade scrim changes color.
