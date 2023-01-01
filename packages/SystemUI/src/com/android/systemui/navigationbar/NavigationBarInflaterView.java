@@ -104,6 +104,8 @@ public class NavigationBarInflaterView extends FrameLayout implements TunerServi
             "system:" + Settings.System.GESTURE_NAVBAR_LENGTH_MODE;
     private static final String GESTURE_NAVBAR_RADIUS =
             "system:" + Settings.System.GESTURE_NAVBAR_RADIUS;
+    private static final String HIDE_IME_SPACE_ENABLE =
+            "system:" + Settings.System.HIDE_IME_SPACE_ENABLE;
 
     private static class Listener implements NavigationModeController.ModeChangedListener {
         private final WeakReference<NavigationBarInflaterView> mSelf;
@@ -148,6 +150,8 @@ public class NavigationBarInflaterView extends FrameLayout implements TunerServi
     private int mHomeHandleWidthMode = 0;
 
     private TunerService mTunerService;
+    
+    private boolean mHideImeSpace;
 
     public NavigationBarInflaterView(Context context, AttributeSet attrs) {
         super(context, attrs);
@@ -214,6 +218,7 @@ public class NavigationBarInflaterView extends FrameLayout implements TunerServi
         mTunerService.addTunable(this, NAVBAR_LAYOUT_VIEWS);
         mTunerService.addTunable(this, GESTURE_NAVBAR_LENGTH_MODE);
         mTunerService.addTunable(this, GESTURE_NAVBAR_RADIUS);
+        mTunerService.addTunable(this, HIDE_IME_SPACE_ENABLE);
     }
 
     @Override
@@ -240,6 +245,10 @@ public class NavigationBarInflaterView extends FrameLayout implements TunerServi
             onLikelyDefaultLayoutChange(true);
         } else if (GESTURE_NAVBAR_RADIUS.equals(key)) {
             onLikelyDefaultLayoutChange(true);
+        } else if (HIDE_IME_SPACE_ENABLE.equals(key)) {
+            mHideImeSpace =
+                TunerService.parseIntegerSwitch(newValue, false);
+            updateHint();
         }
     }
 
