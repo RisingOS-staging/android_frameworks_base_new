@@ -62,4 +62,10 @@ public class QSLayoutUtils {
        }
        return true;
    }
+   
+   public static int getQsUiStyle(Context context) {
+       return Settings.System.getIntForUser(context.getContentResolver(),
+                Settings.System.QS_TILE_UI_STYLE,
+                0, UserHandle.USER_CURRENT);
+   }
 }
