@@ -68,4 +68,7 @@
     
     <!-- Whether to cancel fingerprint operation if not idle -->
     <java-symbol type="bool" name="config_fpCancelIfNotIdle" />
+    
+    <!-- Immersive UI mode toast messages -->
+    <java-symbol type="string" name="immersive_ui_mode_notify_locked" />
 </resources>
