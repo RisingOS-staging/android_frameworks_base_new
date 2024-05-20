@@ -17,6 +17,13 @@
 <resources xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:androidprv="http://schemas.android.com/apk/prv/res/android">
 
+    <!-- Data usage -->
+    <style name="TextAppearance.QS.Status.DataUsage">
+        <item name="android:textColor">?attr/onSurfaceVariant</item>
+        <item name="android:textSize">12sp</item>
+        <item name="android:fontFamily">@*android:string/config_bodyFontFamily</item>
+    </style>
+
     <!-- Island notification -->
     <style name="Theme.Island.SystemUI" parent="@style/Theme.MaterialComponents.DayNight">
         <item name="android:fontFamily">@*android:string/config_bodyFontFamily</item>
