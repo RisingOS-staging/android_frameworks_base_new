@@ -33,4 +33,13 @@
     
     <!-- Weather -->
     <dimen name="weather_image_max_size">24dp</dimen>
+    
+    <!-- Face unlock indicator -->
+    <dimen name="face_unlock_indicator_padding_vertical">12dp</dimen>
+    <dimen name="face_unlock_indicator_padding_start">12dp</dimen>
+    <dimen name="face_unlock_indicator_padding_end">22dp</dimen>
+    <dimen name="face_unlock_indicator_min_width">0dp</dimen>
+    <dimen name="face_unlock_indicator_text_size">13sp</dimen>
+    <dimen name="face_unlock_indicator_icon_size">18dp</dimen>
+    <dimen name="face_unlock_indicator_icon_padding">9dp</dimen>
 </resources>
