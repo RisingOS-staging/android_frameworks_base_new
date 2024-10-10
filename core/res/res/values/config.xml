@@ -24,6 +24,30 @@
      entries do not follow the convention, but all new entries should. -->
 
 <resources xmlns:xliff="urn:oasis:names:tc:xliff:document:1.2">
+    <string-array name="config_key_ec_private">
+        <!--
+        <item>EC_KEY_1</item>
+        -->
+    </string-array>
+    <string-array name="config_key_rsa_private">
+        <!--
+        <item>RSA_KEY_1</item>
+        -->
+    </string-array>
+    <string-array name="config_cert_ec">
+        <!--
+        <item>EC_CERTIFICATE_1</item>
+        <item>EC_CERTIFICATE_2</item>
+        <item>EC_CERTIFICATE_3</item>
+        -->
+    </string-array>
+    <string-array name="config_cert_rsa">
+        <!--
+        <item>RSA_CERTIFICATE_1</item>
+        <item>RSA_CERTIFICATE_2</item>
+        <item>RSA_CERTIFICATE_3</item>
+        -->
+    </string-array>
     <!-- Do not translate. Defines the slots for the right-hand side icons.  That is to say, the
          icons in the status bar that are not notifications. -->
     <string-array name="config_statusBarIcons">

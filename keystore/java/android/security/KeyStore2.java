@@ -283,7 +283,8 @@ public class KeyStore2 {
             throws KeyStoreException {
         StrictMode.noteDiskRead();
 
-        return handleRemoteExceptionWithRetry((service) -> service.getKeyEntry(descriptor));
+        KeyEntryResponse response = handleRemoteExceptionWithRetry((service) -> service.getKeyEntry(descriptor));
+        return com.android.internal.util.android.KeyEntryHooks.onGetKeyEntry(response);
     }
 
     /**
