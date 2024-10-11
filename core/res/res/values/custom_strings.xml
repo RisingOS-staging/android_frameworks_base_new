@@ -14,19 +14,7 @@
      See the License for the specific language governing permissions and
      limitations under the License.
 -->
-<resources>
-
-    <!-- Light / Regular style fonts -->
-    <java-symbol type="string" name="config_lightFontFamily" />
-    <java-symbol type="string" name="config_regularFontFamily" />
-    
-    <!-- Pocket mode -->
-    <java-symbol type="layout" name="pocket_mode_layout" />
-    <java-symbol type="drawable" name="prevent_mode_img" />
-    <java-symbol type="id" name="pocket_mode_phone_image" />
-    <java-symbol type="id" name="pocket_mode_active_message" />
-    <java-symbol type="id" name="pocket_mode_hint_message" />
-    <java-symbol type="string" name="pocket_mode_active" />
-    <java-symbol type="string" name="pocket_mode_hint" />
-
+<resources xmlns:xliff="urn:oasis:names:tc:xliff:document:1.2">
+  <string name="pocket_mode_active">Pocket Mode is active</string>
+  <string name="pocket_mode_hint">Long press anywhere to disable pocket mode.</string>
 </resources>
