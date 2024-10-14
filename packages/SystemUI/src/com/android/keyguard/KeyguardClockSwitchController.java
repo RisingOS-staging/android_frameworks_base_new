@@ -34,6 +34,7 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.FrameLayout;
 import android.widget.LinearLayout;
+import android.widget.RelativeLayout;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.VisibleForTesting;
@@ -68,6 +69,8 @@ import com.android.systemui.util.ViewController;
 import com.android.systemui.util.concurrency.DelayableExecutor;
 import com.android.systemui.util.settings.SecureSettings;
 
+import com.android.systemui.clocks.*;
+
 import kotlinx.coroutines.DisposableHandle;
 
 import java.io.PrintWriter;
@@ -96,6 +99,7 @@ public class KeyguardClockSwitchController extends ViewController<KeyguardClockS
     private final NotificationIconContainerAlwaysOnDisplayViewBinder mNicViewBinder;
     private FrameLayout mSmallClockFrame; // top aligned clock
     private FrameLayout mLargeClockFrame; // centered clock
+    private View mCustomClock;
 
     @KeyguardClockSwitch.ClockSize
     private int mCurrentClockSize = SMALL;
@@ -146,6 +150,18 @@ public class KeyguardClockSwitchController extends ViewController<KeyguardClockS
         @Override
         public void onChange(boolean change) {
             setWeatherVisibility();
+        }
+    };
+    
+    private boolean mEnableCustomClock = false;
+    private int mClockStyle = 0;
+    private final ContentObserver mCustomClockObserver = new ContentObserver(null) {
+        @Override
+        public void onChange(boolean change) {
+            mClockStyle = mSecureSettings.getIntForUser(
+                ClockStyle.CLOCK_STYLE_KEY, 0, UserHandle.USER_CURRENT);
+            mEnableCustomClock = mClockStyle != 0;
+            updateDoubleLineClock();
         }
     };
 
@@ -245,6 +261,8 @@ public class KeyguardClockSwitchController extends ViewController<KeyguardClockS
     protected void onInit() {
         mKeyguardSliceViewController.init();
 
+        mCustomClock = mView.findViewById(R.id.clock_ls);
+
         if (!MigrateClocksToBlueprint.isEnabled()) {
             mSmallClockFrame = mView.findViewById(R.id.lockscreen_clock_view);
             mLargeClockFrame = mView.findViewById(R.id.lockscreen_clock_view_large);
@@ -321,6 +339,12 @@ public class KeyguardClockSwitchController extends ViewController<KeyguardClockS
                     mShowWeatherObserver,
                     UserHandle.USER_ALL
             );
+            mSecureSettings.registerContentObserverForUserSync(
+                    ClockStyle.CLOCK_STYLE_KEY,
+                    false, /* notifyForDescendants */
+                    mCustomClockObserver,
+                    UserHandle.USER_ALL
+            );
         });
 
         updateDoubleLineClock();
@@ -374,6 +398,7 @@ public class KeyguardClockSwitchController extends ViewController<KeyguardClockS
         mBgExecutor.execute(() -> {
             mSecureSettings.unregisterContentObserverSync(mDoubleLineClockObserver);
             mSecureSettings.unregisterContentObserverSync(mShowWeatherObserver);
+            mSecureSettings.unregisterContentObserverSync(mCustomClockObserver);
         });
 
         mKeyguardUnlockAnimationController.removeKeyguardUnlockAnimationListener(
@@ -394,6 +419,7 @@ public class KeyguardClockSwitchController extends ViewController<KeyguardClockS
     }
 
     private void addDateWeatherView() {
+        updateCustomClock();
         if (MigrateClocksToBlueprint.isEnabled()) {
             return;
         }
@@ -451,6 +477,7 @@ public class KeyguardClockSwitchController extends ViewController<KeyguardClockS
      * Apply dp changes on configuration change
      */
     public void onConfigChanged() {
+        updateCustomClock();
         mView.onConfigChanged();
         mKeyguardSmallClockTopMargin =
                 mView.getResources().getDimensionPixelSize(R.dimen.keyguard_clock_top_margin);
@@ -520,6 +547,9 @@ public class KeyguardClockSwitchController extends ViewController<KeyguardClockS
         if (clock != null) {
             clock.getSmallClock().getEvents().onTimeTick();
             clock.getLargeClock().getEvents().onTimeTick();
+        }
+        if (mEnableCustomClock && mCustomClock != null) {
+        	((ClockStyle) mCustomClock).onTimeChanged();
         }
     }
 
@@ -645,6 +675,7 @@ public class KeyguardClockSwitchController extends ViewController<KeyguardClockS
     }
 
     private void updateDoubleLineClock() {
+        updateCustomClock();
         if (MigrateClocksToBlueprint.isEnabled()) {
             return;
         }
@@ -653,6 +684,10 @@ public class KeyguardClockSwitchController extends ViewController<KeyguardClockS
                     .getInteger(com.android.internal.R.integer.config_doublelineClockDefault),
             UserHandle.USER_CURRENT) != 0;
 
+        if (mEnableCustomClock) {
+            mCanShowDoubleLineClock = false;
+        }
+
         if (!mCanShowDoubleLineClock) {
             mUiExecutor.execute(() -> displayClock(KeyguardClockSwitch.SMALL,
                     /* animate */ true));
@@ -660,11 +695,16 @@ public class KeyguardClockSwitchController extends ViewController<KeyguardClockS
     }
 
     private void setDateWeatherVisibility() {
+        updateCustomClock();
         if (mDateWeatherView != null) {
             mUiExecutor.execute(() -> {
-                mDateWeatherView.setVisibility(clockHasCustomWeatherDataDisplay()
-                        ? mKeyguardDateWeatherViewInvisibility
-                        : View.VISIBLE);
+                if (mEnableCustomClock) {
+                    mDateWeatherView.setVisibility(View.GONE);
+                } else {
+                    mDateWeatherView.setVisibility(clockHasCustomWeatherDataDisplay()
+                            ? mKeyguardDateWeatherViewInvisibility
+                            : View.VISIBLE);
+                }
             });
         }
     }
@@ -685,6 +725,21 @@ public class KeyguardClockSwitchController extends ViewController<KeyguardClockS
                         mIsActiveDreamLockscreenHosted ? View.INVISIBLE : View.VISIBLE);
             });
         }
+    }
+
+    private void updateCustomClock() {
+        RelativeLayout.LayoutParams newStatusAreaParams = new RelativeLayout.LayoutParams(
+                ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT);
+        newStatusAreaParams.addRule(RelativeLayout.BELOW, mEnableCustomClock ? R.id.clock_ls : R.id.lockscreen_clock_view);
+        if (mStatusArea != null) {
+            RelativeLayout.LayoutParams currentParams = (RelativeLayout.LayoutParams) mStatusArea.getLayoutParams();
+            if (!paramsEquals(currentParams, newStatusAreaParams)) {
+                mStatusArea.setLayoutParams(newStatusAreaParams);
+            }
+        }
+    }
+    private boolean paramsEquals(RelativeLayout.LayoutParams params1, RelativeLayout.LayoutParams params2) {
+        return params1.getRules()[RelativeLayout.BELOW] == params2.getRules()[RelativeLayout.BELOW];
     }
 
     /**

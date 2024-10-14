@@ -41,6 +41,12 @@
         android:clipChildren="false"
         android:visibility="gone" />
 
+    <include 
+        android:id="@+id/clock_ls"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        layout="@layout/keyguard_clock_style" />
+
     <!-- Not quite optimal but needed to translate these items as a group. The
          NotificationIconContainer has its own logic for translation. -->
     <com.android.keyguard.KeyguardStatusAreaView
@@ -49,7 +55,7 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_alignParentStart="true"
-        android:layout_below="@id/lockscreen_clock_view">
+        android:layout_below="@id/clock_ls">
 
       <include layout="@layout/keyguard_slice_view"
                android:id="@+id/keyguard_slice_view"
@@ -60,6 +66,7 @@
           android:id="@+id/left_aligned_notification_icon_container"
           android:layout_width="match_parent"
           android:layout_height="@dimen/notification_shelf_height"
+          android:layout_marginTop="@dimen/notification_shelf_margin_top"
           android:paddingStart="@dimen/below_clock_padding_start_icons"
           android:visibility="invisible"
           />
