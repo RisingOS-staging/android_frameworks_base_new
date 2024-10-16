@@ -72,7 +72,8 @@ public class AODOnChargeService extends SystemService {
             } else {
                 unregisterPowerReceiver();
                 if (mIsAODStateModifiedByService) {
-                    Settings.Secure.putInt(mContext.getContentResolver(), Settings.Secure.DOZE_ALWAYS_ON, 0);
+                    Settings.Secure.putInt(mContext.getContentResolver(),
+                         Settings.Secure.DOZE_ALWAYS_ON, 0);
                     mAODActive = false;
                     mIsAODStateModifiedByService = false;
                 }
@@ -101,8 +102,13 @@ public class AODOnChargeService extends SystemService {
     public void onBootPhase(int phase) {
         if (phase == SystemService.PHASE_BOOT_COMPLETED) {
             Slog.v(TAG, "onBootPhase PHASE_BOOT_COMPLETED");
-            Intent batteryStatus = mContext.registerReceiver(null, new IntentFilter(Intent.ACTION_BATTERY_CHANGED));
-            if (batteryStatus != null && isCharging(batteryStatus) && isPluggedIn(batteryStatus)) {
+            Intent batteryStatus = mContext.registerReceiver(null, 
+                new IntentFilter(Intent.ACTION_BATTERY_CHANGED));
+            if (isServiceEnabled() && batteryStatus != null 
+                && isCharging(batteryStatus) && isPluggedIn(batteryStatus)) {
+                // reset AOD state on boot if service is enabled
+                Settings.Secure.putInt(mContext.getContentResolver(), 
+                    Settings.Secure.DOZE_ALWAYS_ON, 0);
                 Slog.v(TAG, "Device is plugged in and charging on boot, enabling AOD");
                 mPluggedIn = true;
                 maybeActivateAOD();
@@ -191,9 +197,9 @@ public class AODOnChargeService extends SystemService {
     }
     
     private boolean isWakeOnPlugEnabled() {
-        return LineageSettings.Global.getInt(resolver,
+        return LineageSettings.Global.getInt(mContext.getContentResolver(),
                 LineageSettings.Global.WAKE_WHEN_PLUGGED_OR_UNPLUGGED,
-                (mContext.getResources.getBoolean(
+                (mContext.getResources().getBoolean(
                 com.android.internal.R.bool.config_unplugTurnsOnScreen) ? 1 : 0)) == 1;
     }
 
