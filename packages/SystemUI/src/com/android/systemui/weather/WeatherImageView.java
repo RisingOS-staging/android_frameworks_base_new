@@ -21,9 +21,11 @@ import android.util.DisplayMetrics;
 import android.view.View.MeasureSpec;
 import android.widget.ImageView;
 
+import com.android.systemui.res.R;
+
 public class WeatherImageView extends ImageView {
-    
-    private static final int MAX_SIZE_PX = 64;
+
+    private int maxSizePx;
 
     private WeatherViewController mWeatherViewController;
 
@@ -37,6 +39,7 @@ public class WeatherImageView extends ImageView {
 
     public WeatherImageView(Context context, AttributeSet attrs, int defStyle) {
         super(context, attrs, defStyle);
+        maxSizePx = (int) context.getResources().getDimension(R.dimen.weather_image_max_size);
         mWeatherViewController = new WeatherViewController(context, this, null, null);
     }
 
@@ -55,8 +58,8 @@ public class WeatherImageView extends ImageView {
     
     @Override
     protected void onMeasure(int widthMeasureSpec, int heightMeasureSpec) {
-        int width = Math.min(MAX_SIZE_PX, MeasureSpec.getSize(widthMeasureSpec));
-        int height = Math.min(MAX_SIZE_PX, MeasureSpec.getSize(heightMeasureSpec));
+        int width = Math.min(maxSizePx, MeasureSpec.getSize(widthMeasureSpec));
+        int height = Math.min(maxSizePx, MeasureSpec.getSize(heightMeasureSpec));
         setMeasuredDimension(width, height);
     }
 }
