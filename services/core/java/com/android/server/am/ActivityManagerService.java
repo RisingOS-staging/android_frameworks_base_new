@@ -21167,4 +21167,13 @@ public class ActivityManagerService extends IActivityManager.Stub
     void clearPendingTopAppLocked() {
         mPendingStartActivityUids.clear();
     }
+    
+    @Override
+    public boolean isThreeFingersSwipeActive() {
+        synchronized (this) {
+            return Settings.System.getInt(
+                mContext.getContentResolver(),
+                "three_finger_gesture_active", 0) != 0;
+        }
+    }
 }
