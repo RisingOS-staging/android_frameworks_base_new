@@ -19,6 +19,7 @@ import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
+import android.database.ContentObserver;
 import android.os.BatteryManager;
 import android.os.Handler;
 import android.os.Looper;
@@ -26,6 +27,8 @@ import android.os.PowerManager;
 import android.os.UserHandle;
 import android.provider.Settings;
 import android.util.Slog;
+
+import lineageos.providers.LineageSettings;
 
 import com.android.server.SystemService;
 
@@ -61,6 +64,22 @@ public class AODOnChargeService extends SystemService {
         }
     };
 
+    private final ContentObserver mSettingsObserver = new ContentObserver(mHandler) {
+        @Override
+        public void onChange(boolean selfChange) {
+            if (isServiceEnabled()) {
+                registerPowerReceiver();
+            } else {
+                unregisterPowerReceiver();
+                if (mIsAODStateModifiedByService) {
+                    Settings.Secure.putInt(mContext.getContentResolver(), Settings.Secure.DOZE_ALWAYS_ON, 0);
+                    mAODActive = false;
+                    mIsAODStateModifiedByService = false;
+                }
+            }
+        }
+    };
+
     public AODOnChargeService(Context context) {
         super(context);
         mContext = context;
@@ -71,8 +90,11 @@ public class AODOnChargeService extends SystemService {
     public void onStart() {
         Slog.v(TAG, "Starting " + TAG);
         publishLocalService(AODOnChargeService.class, this);
-        IntentFilter filter = new IntentFilter(Intent.ACTION_BATTERY_CHANGED);
-        mContext.registerReceiver(mPowerReceiver, filter);
+        registerSettingsObserver();
+
+        if (isServiceEnabled()) {
+            registerPowerReceiver();
+        }
     }
 
     @Override
@@ -86,6 +108,22 @@ public class AODOnChargeService extends SystemService {
                 maybeActivateAOD();
             }
         }
+    }
+
+    private void registerPowerReceiver() {
+        IntentFilter filter = new IntentFilter(Intent.ACTION_BATTERY_CHANGED);
+        mContext.registerReceiver(mPowerReceiver, filter);
+    }
+
+    private void unregisterPowerReceiver() {
+        mContext.unregisterReceiver(mPowerReceiver);
+    }
+
+    private void registerSettingsObserver() {
+        mContext.getContentResolver().registerContentObserver(
+                Settings.System.getUriFor("doze_always_on_charge_mode"), 
+                true, 
+                mSettingsObserver);
     }
 
     private void maybeActivateAOD() {
@@ -134,20 +172,29 @@ public class AODOnChargeService extends SystemService {
             mIsAODStateModifiedByService = false;
             Slog.v(TAG, "AOD deactivated by service");
         }
-        handleAODStateChange();
+        handleAODStateChange(activate);
     }
 
-    private void handleAODStateChange() {
+    private void handleAODStateChange(boolean activate) {
         if (mPowerManager.isInteractive()) {
             Slog.v(TAG, "Screen is already on, no further action needed");
         } else {
-            mContext.sendBroadcast(new Intent(PULSE_ACTION));
+            if ((activate && !isWakeOnPlugEnabled()) || !activate) {
+                mContext.sendBroadcast(new Intent(PULSE_ACTION));
+            }
         }
     }
 
     private boolean isServiceEnabled() {
         return Settings.System.getInt(mContext.getContentResolver(),
                 "doze_always_on_charge_mode", 0) != 0;
+    }
+    
+    private boolean isWakeOnPlugEnabled() {
+        return LineageSettings.Global.getInt(resolver,
+                LineageSettings.Global.WAKE_WHEN_PLUGGED_OR_UNPLUGGED,
+                (mContext.getResources.getBoolean(
+                com.android.internal.R.bool.config_unplugTurnsOnScreen) ? 1 : 0)) == 1;
     }
 
     private boolean isCharging(Intent intent) {
