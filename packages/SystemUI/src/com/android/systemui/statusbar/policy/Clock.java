@@ -35,6 +35,7 @@ import android.os.Handler;
 import android.os.Parcelable;
 import android.os.SystemClock;
 import android.os.UserHandle;
+import android.provider.Settings;
 import android.text.Spannable;
 import android.text.SpannableStringBuilder;
 import android.text.TextUtils;
@@ -125,6 +126,8 @@ public class Clock extends TextView implements
     // Fields to cache the width so the clock remains at an approximately constant width
     private int mCharsAtCurrentWidth = -1;
     private int mCachedWidth = -1;
+    
+    private int mSbClockBgStyle = 0;
 
     /**
      * Color to be set on this {@link TextView}, when wallpaperTextColor is <b>not</b> utilized.
@@ -156,6 +159,8 @@ public class Clock extends TextView implements
         try {
             mAmPmStyle = LineageSettings.System.getInt(mContext.getContentResolver(),
                     LineageSettings.System.STATUS_BAR_AM_PM, AM_PM_STYLE_GONE);
+            mIsStatusBar = a.getBoolean(R.styleable.Clock_isStatusBar, mIsStatusBar);
+            mNonAdaptedColor = getCurrentTextColor();
             mContentObserver = new ContentObserver(null) {
                 @Override
                 public void onChange(boolean selfChange, Uri uri) {
@@ -175,11 +180,15 @@ public class Clock extends TextView implements
                         handleTaskStackListener(
                                 LineageSettings.System.getInt(mContext.getContentResolver(),
                                         LineageSettings.System.STATUS_BAR_CLOCK_AUTO_HIDE, 0) != 0);
+                    } else if (Settings.System.getUriFor("statusbar_clock_chip").equals(uri)) {
+                        mSbClockBgStyle = Settings.System.getInt(
+                                mContext.getContentResolver(), "statusbar_clock_chip", 0);
+                        mContext.getMainExecutor().execute(() -> {
+                            updateStatusBarClock();
+                        });
                     }
                 }
             };
-            mIsStatusBar = a.getBoolean(R.styleable.Clock_isStatusBar, mIsStatusBar);
-            mNonAdaptedColor = getCurrentTextColor();
         } finally {
             a.recycle();
         }
@@ -187,6 +196,49 @@ public class Clock extends TextView implements
         mUserTracker = Dependency.get(UserTracker.class);
 
         setIncludeFontPadding(false);
+    }
+    
+    private void updateStatusBarClock() {
+        if (!mIsStatusBar) return;
+        int clockID = getId();
+        int[] clockBackgrounds = {
+            R.drawable.sb_date_bg1,
+            R.drawable.sb_date_bg2,
+            R.drawable.sb_date_bg3,
+            R.drawable.sb_date_bg4,
+            R.drawable.sb_date_bg5,
+            R.drawable.sb_date_bg6,
+            R.drawable.sb_date_bg7,
+            R.drawable.sb_date_bg8,
+            R.drawable.sb_date_bg9,
+            R.drawable.sb_date_bg10,
+            R.drawable.sb_date_bg11,
+            R.drawable.sb_date_bg12
+        };
+        if (mSbClockBgStyle > 0 && mSbClockBgStyle <= clockBackgrounds.length) {
+            android.graphics.drawable.Drawable backgroundDrawable = getContext().getDrawable(clockBackgrounds[mSbClockBgStyle - 1]);
+            if (clockID == R.id.clock_right || clockID == R.id.clock_center || clockID == R.id.clock) {
+                setBackground(backgroundDrawable);
+                setPadding(12, 4, 12, 4);
+                setTextAlignment(View.TEXT_ALIGNMENT_CENTER);
+            }
+        } else {
+            int clockPaddingStart = getResources().getDimensionPixelSize(R.dimen.status_bar_clock_starting_padding);
+            int clockPaddingEnd = getResources().getDimensionPixelSize(R.dimen.status_bar_clock_end_padding);
+            int leftClockPaddingStart = getResources().getDimensionPixelSize(R.dimen.status_bar_left_clock_starting_padding);
+            int leftClockPaddingEnd = getResources().getDimensionPixelSize(R.dimen.status_bar_left_clock_end_padding);
+            setBackground(null);
+            if (clockID == R.id.clock_right) {
+                setPaddingRelative(clockPaddingStart, 0, clockPaddingEnd, 0);
+                setTextAlignment(View.TEXT_ALIGNMENT_VIEW_END);
+            } else if (clockID == R.id.clock_center) {
+                setPaddingRelative(0, 0, 0, 0);
+                setTextAlignment(View.TEXT_ALIGNMENT_CENTER);
+            } else if (clockID == R.id.clock) {
+                setPaddingRelative(leftClockPaddingStart, 0, leftClockPaddingEnd, 0);
+                setTextAlignment(View.TEXT_ALIGNMENT_START);
+            }
+        }
     }
 
     @Override
@@ -249,8 +301,14 @@ public class Clock extends TextView implements
                     LineageSettings.System.getUriFor(
                             LineageSettings.System.STATUS_BAR_CLOCK_AUTO_HIDE),
                     false, mContentObserver);
+            mContext.getContentResolver().registerContentObserver(
+                    Settings.System.getUriFor(
+                            "statusbar_clock_chip"),
+                    false, mContentObserver);
             mContentObserver.onChange(false, LineageSettings.System.getUriFor(
                     LineageSettings.System.STATUS_BAR_CLOCK_AUTO_HIDE));
+            mContentObserver.onChange(false, Settings.System.getUriFor(
+                    "statusbar_clock_chip"));
             mCommandQueue.addCallback(this);
             mUserTracker.addCallback(mUserChangedCallback, mContext.getMainExecutor());
             mCurrentUserId = mUserTracker.getUserId();
@@ -286,6 +344,8 @@ public class Clock extends TextView implements
             mCommandQueue.removeCallback(this);
             mUserTracker.removeCallback(mUserChangedCallback);
             handleTaskStackListener(false);
+            // avoid increasing garbage memory when theme/font changes
+            setBackground(null);
         }
     }
 
