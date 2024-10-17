@@ -46,6 +46,8 @@ public class ClockController {
     private int mClockPosition;
     private boolean mDenyListed;
 
+    private ContentObserver mClockContentObserver;
+
     public ClockController(Context context, View statusBar) {
         mContext = context;
 
@@ -58,7 +60,7 @@ public class ClockController {
         Uri iconHideList = Settings.Secure.getUriFor(StatusBarIconController.ICON_HIDE_LIST);
         Uri statusBarClock = LineageSettings.System.getUriFor(
                 LineageSettings.System.STATUS_BAR_CLOCK);
-        ContentObserver contentObserver = new ContentObserver(null) {
+        mClockContentObserver = new ContentObserver(null) {
             @Override
             public void onChange(boolean selfChange, @Nullable Uri uri) {
                 if (iconHideList.equals(uri)) {
@@ -72,11 +74,11 @@ public class ClockController {
                 updateActiveClock();
             }
         };
-        mContext.getContentResolver().registerContentObserver(iconHideList, false, contentObserver);
+        mContext.getContentResolver().registerContentObserver(iconHideList, false, mClockContentObserver);
         mContext.getContentResolver().registerContentObserver(statusBarClock, false,
-                contentObserver);
-        contentObserver.onChange(true, iconHideList);
-        contentObserver.onChange(true, statusBarClock);
+                mClockContentObserver);
+        mClockContentObserver.onChange(true, iconHideList);
+        mClockContentObserver.onChange(true, statusBarClock);
     }
 
     public Clock getClock() {
@@ -114,5 +116,9 @@ public class ClockController {
 
     public void onDensityOrFontScaleChanged() {
         mActiveClock.onDensityOrFontScaleChanged();
+    }
+    
+    public void removeObserver() {
+        mContext.getContentResolver().unregisterContentObserver(mClockContentObserver);
     }
 }
