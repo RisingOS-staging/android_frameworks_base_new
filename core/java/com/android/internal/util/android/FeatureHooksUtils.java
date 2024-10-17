@@ -84,7 +84,10 @@ public class FeatureHooksUtils {
 
     private static final Set<String> pixelPackages = new HashSet<>(Set.of(
             "com.google.android.googlequicksearchbox",
-            "com.google.android.apps.nexuslauncher"
+            "com.google.android.apps.nexuslauncher",
+            "com.google.android.dialer",
+            "com.google.android.apps.pixel.agent",
+            "com.google.android.apps.pixel.creativeassistant"
     ));
 
     public static boolean hasSystemFeature(String name, int version, boolean hasSystemFeature) {
