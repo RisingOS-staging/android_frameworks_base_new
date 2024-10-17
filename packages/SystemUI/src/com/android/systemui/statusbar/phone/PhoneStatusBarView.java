@@ -60,6 +60,7 @@ import com.android.systemui.statusbar.window.StatusBarWindowController;
 import com.android.systemui.user.ui.binder.StatusBarUserChipViewBinder;
 import com.android.systemui.user.ui.viewmodel.StatusBarUserChipViewModel;
 import com.android.systemui.util.leak.RotationUtils;
+import com.android.systemui.util.StatusBarUtils;
 
 import java.util.Objects;
 
@@ -84,6 +85,10 @@ public class PhoneStatusBarView extends FrameLayout implements Callbacks {
     private Gefingerpoken mTouchEventHandler;
     private int mDensity;
     private float mFontScale;
+    
+    private StatusBarUtils mSbUtils;
+    
+    private boolean mIsInflated = false;
 
     /**
      * Draw this many pixels into the left/right side of the cutout to optimally use the space
@@ -95,6 +100,14 @@ public class PhoneStatusBarView extends FrameLayout implements Callbacks {
         mCommandQueue = Dependency.get(CommandQueue.class);
         mContentInsetsProvider = Dependency.get(StatusBarContentInsetsProvider.class);
         mStatusBarWindowController = Dependency.get(StatusBarWindowController.class);
+        
+        mSbUtils = StatusBarUtils.getInstance(context);
+        mSbUtils.setLayoutChangeListener(new StatusBarUtils.LayoutChangeListener() {
+            @Override
+            public void onLayoutChanged(int leftPadding, int rightPadding, int topPadding) {
+                updateStatusBarHeight();
+            }
+        });
 
         // Only create FRB here if there is no navbar
         if (!hasNavigationBar()) {
@@ -156,6 +169,7 @@ public class PhoneStatusBarView extends FrameLayout implements Callbacks {
         mBattery = findViewById(R.id.battery);
         mClockController = new ClockController(getContext(), this);
         mCutoutSpace = findViewById(R.id.cutout_space_view);
+        mIsInflated = true;
 
         updateResources();
     }
@@ -176,6 +190,9 @@ public class PhoneStatusBarView extends FrameLayout implements Callbacks {
         if (mRotationButtonController != null && !hasNavigationBar()) {
             mCommandQueue.addCallback(this);
         }
+        if (mSbUtils != null) {
+            mSbUtils.registerObservers();
+        }
     }
 
     @Override
@@ -187,6 +204,9 @@ public class PhoneStatusBarView extends FrameLayout implements Callbacks {
 
         if (mRotationButtonController != null) {
             mCommandQueue.removeCallback(this);
+        }
+        if (mSbUtils != null) {
+            mSbUtils.unregisterObservers();
         }
     }
 
@@ -304,6 +324,7 @@ public class PhoneStatusBarView extends FrameLayout implements Callbacks {
     }
 
     public void updateResources() {
+        if (!mIsInflated) return;
         mCutoutSideNudge = getResources().getDimensionPixelSize(
                 R.dimen.display_cutout_margin_consumption);
 
@@ -311,6 +332,7 @@ public class PhoneStatusBarView extends FrameLayout implements Callbacks {
     }
 
     private void updateStatusBarHeight() {
+        if (!mIsInflated) return;
         final int waterfallTopInset =
                 mDisplayCutout == null ? 0 : mDisplayCutout.getWaterfallInsets().top;
         ViewGroup.LayoutParams layoutParams = getLayoutParams();
@@ -333,17 +355,18 @@ public class PhoneStatusBarView extends FrameLayout implements Callbacks {
     }
 
     private void updatePaddings() {
-        int statusBarPaddingStart = getResources().getDimensionPixelSize(
-                R.dimen.status_bar_padding_start);
+        int leftPadding = mSbUtils.getLeftPadding();
+        int rightPadding = mSbUtils.getRightPadding();
+        int topPadding = mSbUtils.getTopPadding();
 
         findViewById(R.id.status_bar_contents).setPaddingRelative(
-                statusBarPaddingStart,
-                getResources().getDimensionPixelSize(R.dimen.status_bar_padding_top),
-                getResources().getDimensionPixelSize(R.dimen.status_bar_padding_end),
+                leftPadding,
+                topPadding,
+                rightPadding,
                 0);
 
         findViewById(R.id.notification_lights_out)
-                .setPaddingRelative(0, statusBarPaddingStart, 0, 0);
+                .setPaddingRelative(0, leftPadding, 0, 0);
 
         findViewById(R.id.system_icons).setPaddingRelative(
                 getResources().getDimensionPixelSize(R.dimen.status_bar_icons_padding_start),
