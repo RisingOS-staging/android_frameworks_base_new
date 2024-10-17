@@ -261,7 +261,8 @@ public class KeyguardClockSwitchController extends ViewController<KeyguardClockS
     protected void onInit() {
         mKeyguardSliceViewController.init();
 
-        mCustomClock = mView.findViewById(R.id.clock_ls);
+        mStatusArea = mView.findViewById(R.id.keyguard_status_area);
+        mCustomClock = mStatusArea.findViewById(R.id.clock_ls);
 
         if (!MigrateClocksToBlueprint.isEnabled()) {
             mSmallClockFrame = mView.findViewById(R.id.lockscreen_clock_view);
@@ -274,7 +275,6 @@ public class KeyguardClockSwitchController extends ViewController<KeyguardClockS
         }
 
         if (mFeatureFlags.isEnabled(LOCKSCREEN_WALLPAPER_DREAM_ENABLED)) {
-            mStatusArea = mView.findViewById(R.id.keyguard_status_area);
             collectFlow(mStatusArea, mKeyguardInteractor.isActiveDreamLockscreenHosted(),
                     mIsActiveDreamLockscreenHostedCallback);
         }
@@ -419,7 +419,6 @@ public class KeyguardClockSwitchController extends ViewController<KeyguardClockS
     }
 
     private void addDateWeatherView() {
-        updateCustomClock();
         if (MigrateClocksToBlueprint.isEnabled()) {
             return;
         }
@@ -477,7 +476,6 @@ public class KeyguardClockSwitchController extends ViewController<KeyguardClockS
      * Apply dp changes on configuration change
      */
     public void onConfigChanged() {
-        updateCustomClock();
         mView.onConfigChanged();
         mKeyguardSmallClockTopMargin =
                 mView.getResources().getDimensionPixelSize(R.dimen.keyguard_clock_top_margin);
@@ -675,7 +673,6 @@ public class KeyguardClockSwitchController extends ViewController<KeyguardClockS
     }
 
     private void updateDoubleLineClock() {
-        updateCustomClock();
         if (MigrateClocksToBlueprint.isEnabled()) {
             return;
         }
@@ -695,7 +692,6 @@ public class KeyguardClockSwitchController extends ViewController<KeyguardClockS
     }
 
     private void setDateWeatherVisibility() {
-        updateCustomClock();
         if (mDateWeatherView != null) {
             mUiExecutor.execute(() -> {
                 if (mEnableCustomClock) {
@@ -725,21 +721,6 @@ public class KeyguardClockSwitchController extends ViewController<KeyguardClockS
                         mIsActiveDreamLockscreenHosted ? View.INVISIBLE : View.VISIBLE);
             });
         }
-    }
-
-    private void updateCustomClock() {
-        RelativeLayout.LayoutParams newStatusAreaParams = new RelativeLayout.LayoutParams(
-                ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT);
-        newStatusAreaParams.addRule(RelativeLayout.BELOW, mEnableCustomClock ? R.id.clock_ls : R.id.lockscreen_clock_view);
-        if (mStatusArea != null) {
-            RelativeLayout.LayoutParams currentParams = (RelativeLayout.LayoutParams) mStatusArea.getLayoutParams();
-            if (!paramsEquals(currentParams, newStatusAreaParams)) {
-                mStatusArea.setLayoutParams(newStatusAreaParams);
-            }
-        }
-    }
-    private boolean paramsEquals(RelativeLayout.LayoutParams params1, RelativeLayout.LayoutParams params2) {
-        return params1.getRules()[RelativeLayout.BELOW] == params2.getRules()[RelativeLayout.BELOW];
     }
 
     /**
