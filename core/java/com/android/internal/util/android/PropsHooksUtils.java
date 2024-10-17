@@ -100,6 +100,7 @@ public class PropsHooksUtils {
         boolean isPixelDevice = SystemProperties.get("ro.soc.manufacturer").equalsIgnoreCase("Google");
         String model = SystemProperties.get("ro.product.model");
         boolean isMainlineDevice = isPixelDevice && model.matches("Pixel [8-9][a-zA-Z ]*");
+        boolean isTensorDevice = isPixelDevice && model.matches("Pixel [6-9][a-zA-Z ]*");
 
         Map<String, Object> propsToChange = new HashMap<>();
 
@@ -150,9 +151,20 @@ public class PropsHooksUtils {
         }
 
         if (packageName.equals("com.google.android.gms")) {
-            if (SystemProperties.getBoolean(SPOOF_PIXEL_GMS, true)) {
+            setPropValue("TIME", System.currentTimeMillis());
+            if (processName.toLowerCase().contains("unstable") 
+                && SystemProperties.getBoolean(SPOOF_PIXEL_GMS, true)) {
                 spoofBuildGms();
                 return;
+            }
+            if (!isTensorDevice && (processName.contains("gservice")
+                    || processName.contains("learning")
+                    || processName.contains("persistent"))) {
+                propsToChange.putAll(propsToChangePixel5a);
+            } else {
+                if (!isMainlineDevice) {
+                    propsToChange.putAll(propsToChangeMainline);
+                }
             }
         }
 
@@ -251,6 +263,8 @@ public class PropsHooksUtils {
     }
 
     public static void onEngineGetCertificateChain() {
+        if (!SystemProperties.getBoolean(SPOOF_PIXEL_GMS, true)) return;
+        if (SystemProperties.getBoolean(KeyEntryHooks.ENTRY_HOOKS_ENABLED_PROP, true)) return;
         // Check stack for SafetyNet or Play Integrity
         if (isCallerSafetyNet()) {
             Log.i(TAG, "Blocked key attestation");
