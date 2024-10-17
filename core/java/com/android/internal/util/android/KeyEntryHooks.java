@@ -56,6 +56,7 @@ import com.android.internal.R;
  */
 public final class KeyEntryHooks {
     private static final String TAG = KeyEntryHooks.class.getSimpleName();
+    public static final String ENTRY_HOOKS_ENABLED_PROP = "persist.sys.entryhooks_enabled";
     private static PrivateKey EC, RSA;
     private static byte[] EC_CERTS, RSA_CERTS;
     private static final ASN1ObjectIdentifier OID = new ASN1ObjectIdentifier("1.3.6.1.4.1.11129.2.1.17");
@@ -64,7 +65,7 @@ public final class KeyEntryHooks {
     private static volatile String algo;
     
     static {
-        if (SystemProperties.getBoolean(PropsHooksUtils.SPOOF_PIXEL_GMS, true)) {
+        if (SystemProperties.getBoolean(ENTRY_HOOKS_ENABLED_PROP, false)) {
             try {
                 Context context = ActivityThread.currentApplication().getApplicationContext();
                 if (context != null) {
@@ -176,7 +177,7 @@ public final class KeyEntryHooks {
     public static KeyEntryResponse onGetKeyEntry(KeyEntryResponse response) {
         if (response == null)
             return null;
-        if (!SystemProperties.getBoolean(PropsHooksUtils.SPOOF_PIXEL_GMS, true))
+        if (!SystemProperties.getBoolean(ENTRY_HOOKS_ENABLED_PROP, false))
             return response;
         if (response.metadata == null)
             return response;
