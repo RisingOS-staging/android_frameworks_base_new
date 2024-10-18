@@ -697,6 +697,9 @@ public class PhoneWindowManager implements WindowManagerPolicy {
 
     private ThreeFingersSwipeListener mThreeFingersListener;
     private boolean mThreeFingerListenerRegistered;
+    
+    private AiAssistantGestureListener mAiAssistantGestureListener;
+    private boolean mAiAssistantGestureListenerRegistered;
 
     // support for activating the lock screen while the screen is on
     private HashSet<Integer> mAllowLockscreenWhenOnDisplays = new HashSet<>();
@@ -3318,6 +3321,11 @@ public class PhoneWindowManager implements WindowManagerPolicy {
                 mWindowManagerFuncs.unregisterPointerEventListener(mThreeFingersListener, DEFAULT_DISPLAY);
                 mThreeFingerListenerRegistered = false;
             }
+        }
+        
+        if (mAiAssistantGestureListener != null && !mAiAssistantGestureListenerRegistered) {
+            mWindowManagerFuncs.registerPointerEventListener(mAiAssistantGestureListener, DEFAULT_DISPLAY);
+            mAiAssistantGestureListenerRegistered = true;
         }
 
         mShortPressOnWindowBehavior = SHORT_PRESS_WINDOW_NOTHING;
@@ -6936,6 +6944,8 @@ public class PhoneWindowManager implements WindowManagerPolicy {
                         "Three Fingers Long Press");
             }
         });
+        
+        mAiAssistantGestureListener = new AiAssistantGestureListener(mContext);
 
         mLineageHardware = LineageHardwareManager.getInstance(mContext);
         // Ensure observe happens in systemReady() since we need
