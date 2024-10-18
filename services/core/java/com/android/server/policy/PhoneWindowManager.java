@@ -697,6 +697,9 @@ public class PhoneWindowManager implements WindowManagerPolicy {
 
     private ThreeFingersSwipeListener mThreeFingersListener;
     private boolean mThreeFingerListenerRegistered;
+    
+    private AiAssistantGestureListener mAiAssistantGestureListener;
+    private boolean mAiAssistantGestureListenerRegistered;
 
     // support for activating the lock screen while the screen is on
     private HashSet<Integer> mAllowLockscreenWhenOnDisplays = new HashSet<>();
@@ -3318,6 +3321,11 @@ public class PhoneWindowManager implements WindowManagerPolicy {
                 mWindowManagerFuncs.unregisterPointerEventListener(mThreeFingersListener, DEFAULT_DISPLAY);
                 mThreeFingerListenerRegistered = false;
             }
+        }
+        
+        if (mAiAssistantGestureListener != null && !mAiAssistantGestureListenerRegistered) {
+            mWindowManagerFuncs.registerPointerEventListener(mAiAssistantGestureListener, DEFAULT_DISPLAY);
+            mAiAssistantGestureListenerRegistered = true;
         }
 
         mShortPressOnWindowBehavior = SHORT_PRESS_WINDOW_NOTHING;
@@ -6934,6 +6942,22 @@ public class PhoneWindowManager implements WindowManagerPolicy {
                 performKeyAction(mThreeFingersLongPressAction, event);
                 performHapticFeedback(HapticFeedbackConstants.LONG_PRESS, false,
                         "Three Fingers Long Press");
+            }
+        });
+        
+        mAiAssistantGestureListener = new AiAssistantGestureListener(mContext, new AiAssistantGestureListener.Callbacks() {
+            @Override
+            public void onToggleTorch() {
+                mAiAssistantGestureListener.setTorchEnabled(mTorchEnabled);
+                toggleTorch();
+            }
+            @Override
+            public void onClearAllNotifications() {
+                clearAllNotifications();
+            }
+            @Override
+            public void onShowVolumePanel() {
+                toggleVolumePanel();
             }
         });
 
