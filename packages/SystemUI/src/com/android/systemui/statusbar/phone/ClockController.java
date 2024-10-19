@@ -93,7 +93,7 @@ public class ClockController {
         }
     }
 
-    private void updateActiveClock() {
+    public void updateActiveClock() {
         mContext.getMainExecutor().execute(() -> {
             mActiveClock.setClockVisibleByUser(false);
             removeDarkReceiver();

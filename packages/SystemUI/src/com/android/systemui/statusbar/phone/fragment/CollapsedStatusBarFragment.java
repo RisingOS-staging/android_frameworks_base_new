@@ -460,6 +460,9 @@ public class CollapsedStatusBarFragment extends Fragment implements CommandQueue
                 false,
                 mVolumeSettingObserver,
                 UserHandle.USER_ALL);
+        if (mClockController != null) {
+            mClockController.updateActiveClock();
+        }
     }
 
     @Override
@@ -596,6 +599,9 @@ public class CollapsedStatusBarFragment extends Fragment implements CommandQueue
             } else {
                 hideClock(animate);
             }
+        }
+        if (mClockController != null) {
+            mClockController.updateActiveClock();
         }
     }
 
