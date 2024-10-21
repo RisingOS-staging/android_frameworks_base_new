@@ -19,7 +19,15 @@
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:orientation="vertical">
+    android:orientation="vertical"
+    android:fitsSystemWindows="true">
+    <Toolbar
+        android:id="@+id/action_bar"
+        style="?android:attr/actionBarStyle"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:theme="?android:attr/actionBarTheme"
+        android:navigationContentDescription="@*android:string/action_bar_up_description" />
     <FrameLayout
         android:id="@+id/content_frame"
         android:layout_width="match_parent"
