@@ -45,6 +45,7 @@
          NotificationIconContainer has its own logic for translation. -->
     <com.android.keyguard.KeyguardStatusAreaView
         android:id="@+id/keyguard_status_area"
+        android:layout_marginTop="@dimen/keyguard_status_area_margin_top"
         android:orientation="vertical"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
