@@ -414,6 +414,12 @@ public class KeyguardIndicationController {
         mCurrentDivider = mContext.getResources().getInteger(R.integer.config_currentInfoDivider);
     }
 
+    public void onUiModeChanged() {
+        if (mFaceIconView != null) {
+            mFaceIconView.updateColor();
+        }
+    }
+
     public void setIndicationAreaTop(ViewGroup indicationAreaTop) {
         mFaceIconView = indicationAreaTop.findViewById(R.id.face_unlock_icon);
         if (mFaceIconView != null) {

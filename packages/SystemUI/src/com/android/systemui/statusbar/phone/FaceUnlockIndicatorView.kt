@@ -106,10 +106,12 @@ class FaceUnlockIndicatorView @JvmOverloads constructor(
     }
 
     fun updateColor() {
+        context.getTheme().applyStyle(context.getThemeResId(), true)
         iconPadding = context.resources.getDimensionPixelSize(R.dimen.face_unlock_indicator_icon_padding)
         iconSize = context.resources.getDimensionPixelSize(R.dimen.face_unlock_indicator_icon_size)
         iconTint = ColorStateList.valueOf(context.getColor(R.color.island_title_color))
         backgroundTintList = ColorStateList.valueOf(context.getColor(R.color.island_background_color))
+        invalidate()
     }
 
     fun setState(state: State) {

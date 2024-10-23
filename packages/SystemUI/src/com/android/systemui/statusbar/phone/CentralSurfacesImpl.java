@@ -3245,6 +3245,9 @@ public class CentralSurfacesImpl implements CoreStartable, CentralSurfaces {
             if (mBrightnessMirrorController != null) {
                 mBrightnessMirrorController.onUiModeChanged();
             }
+            if (mKeyguardIndicationController != null) {
+                mKeyguardIndicationController.onUiModeChanged();
+            }
         }
     };
 
