@@ -20,8 +20,10 @@ import android.provider.Settings;
 public class RisingSettingsConstants {
     public static final String CLOCK_STYLE = "clock_style";
     public static final String VOLUME_STYLE = "custom_volume_styles";
+    public static final String STATUSBAR_CLOCK_CHIP = Settings.System.STATUSBAR_CLOCK_CHIP;
 
     public static final String[] SYSTEM_SETTINGS_KEYS = {
+        STATUSBAR_CLOCK_CHIP
     };
     
     public static final String[] SECURE_SETTINGS_KEYS = {
