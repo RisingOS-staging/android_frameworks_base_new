@@ -148,10 +148,12 @@ public class AiAssistantGestureListener implements PointerEventListener {
         boolean onboardingFinished = Settings.System.getInt(
             mContext.getContentResolver(), "ai_assistant_onboarding_finished", 0) == 1;
         if (onboardingFinished) return;
-        AiUtils.sendAssistantActionStateChange(mContext, true);
-        speakAndPerformTask("Hello, I am Risa, your daily assistant. To ask for my help, please perform a two-finger swipe down gesture. Have a great day.", () -> {
-            Settings.System.putInt(mContext.getContentResolver(), "ai_assistant_onboarding_finished", 1);
-            AiUtils.sendAssistantActionStateChange(mContext, false);
+        mContext.getMainExecutor().execute(() -> {
+            AiUtils.sendAssistantActionStateChange(mContext, true);
+            speakAndPerformTask("Hello, I am Risa, your daily assistant. To ask for my help, please perform a two-finger swipe down gesture. Have a great day.", () -> {
+                Settings.System.putInt(mContext.getContentResolver(), "ai_assistant_onboarding_finished", 1);
+                AiUtils.sendAssistantActionStateChange(mContext, false);
+            });
         });
     }
 
@@ -178,10 +180,12 @@ public class AiAssistantGestureListener implements PointerEventListener {
     }
 
     private void triggerVoiceAssistant() {
-        AiUtils.sendAssistantActionStateChange(mContext, true);
-        speakAndPerformTask("Hi, what can I do for you?", () -> {
-            mIsListening = true;
-            startListeningForVoiceInput();
+        mIsListening = true;
+        mContext.getMainExecutor().execute(() -> {
+            AiUtils.sendAssistantActionStateChange(mContext, true);
+            speakAndPerformTask("Hi, what can I do for you?", () -> {
+                startListeningForVoiceInput();
+            });
         });
     }
 
@@ -265,11 +269,11 @@ public class AiAssistantGestureListener implements PointerEventListener {
                 }
                 final String appNameToLaunch = appName;
                 if (command.contains("in free form") || command.contains("in freeform")) {
-                    speakAndPerformTask("Sure thing! Launching " + appNameToLaunch + " in freeform mode", () -> {
+                    mContext.getMainExecutor().execute(() -> {
                         launchAppInFreeformMode(appNameToLaunch);
                     });
                 } else {
-                    speakAndPerformTask("Sure thing! Launching: " + appNameToLaunch, () -> {
+                    mContext.getMainExecutor().execute(() -> {
                         if (AiUtils.openApp(mContext, appNameToLaunch)) {   
                             Log.d(TAG, "Launched :" + appNameToLaunch);
                         } else {
@@ -290,7 +294,7 @@ public class AiAssistantGestureListener implements PointerEventListener {
         } else if (AiUtils.matchesAny(command, AiAssistantResponses.DEVICE_ACTIONS_SEARCH_HOT_WORDS)) {
             speak(AiUtils.getBriefResponseFromGemini(mApiKey, command));
         } else if (AiUtils.matchesAny(command, AiAssistantResponses.HOTWORDS_CHAT_GPT)) {
-            speakAndPerformTask("Sure thing! Trying to establish connection with chat gpt", () -> {
+            mContext.getMainExecutor().execute(() -> {
                 if (AiUtils.openChatGPT(mContext)) {
                     speak("Connection to chat gpt established");
                 }

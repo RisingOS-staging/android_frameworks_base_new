@@ -62,21 +62,23 @@ public class AiUtils  {
     }
     
     public static List<String> getInstalledAppList(Context context) {
-        final List<String> installedAppLabels = new ArrayList<>();
+        final List<String> launchableAppLabels = new ArrayList<>();
         List<ApplicationInfo> packages = context.getPackageManager().getInstalledApplications(0);
         for (ApplicationInfo appInfo : packages) {
-            if ((appInfo.privateFlags & ApplicationInfo.PRIVATE_FLAG_IS_RESOURCE_OVERLAY) == 0) {
+            Intent launchIntent = context.getPackageManager().getLaunchIntentForPackage(appInfo.packageName);
+            if (launchIntent != null) {
                 String label = context.getPackageManager().getApplicationLabel(appInfo).toString().toLowerCase();
-                installedAppLabels.add(label);
+                launchableAppLabels.add(label);
             }
         }
-        return installedAppLabels;
+        return launchableAppLabels;
     }
 
     public static String getPackageNameFromAppName(Context context, String appName) {
         List<ApplicationInfo> packages = context.getPackageManager().getInstalledApplications(0);
         for (ApplicationInfo appInfo : packages) {
-            if ((appInfo.privateFlags & ApplicationInfo.PRIVATE_FLAG_IS_RESOURCE_OVERLAY) == 0) {
+            Intent launchIntent = context.getPackageManager().getLaunchIntentForPackage(appInfo.packageName);
+            if (launchIntent != null) {
                 String label = context.getPackageManager().getApplicationLabel(appInfo).toString().toLowerCase();
                 if (label.equalsIgnoreCase(appName)) {
                     return appInfo.packageName;
