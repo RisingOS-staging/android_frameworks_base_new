@@ -15,22 +15,18 @@
  */
 package com.android.systemui.tuner;
 
-import android.app.Activity;
 import android.app.Fragment;
 import android.app.FragmentTransaction;
 import android.os.Bundle;
 import android.util.Log;
-import android.view.MenuItem;
-import android.view.View;
-import android.view.Window;
-import android.view.WindowManager;
-import android.widget.Toolbar;
 
 import java.util.ArrayDeque;
 
 import androidx.preference.Preference;
 import androidx.preference.PreferenceFragment;
 import androidx.preference.PreferenceScreen;
+
+import com.android.settingslib.collapsingtoolbar.CollapsingToolbarBaseActivity;
 
 import com.android.systemui.Dependency;
 import com.android.systemui.demomode.DemoModeController;
@@ -40,7 +36,7 @@ import com.android.systemui.util.settings.GlobalSettings;
 
 import javax.inject.Inject;
 
-public class TunerActivity extends Activity implements
+public class TunerActivity extends CollapsingToolbarBaseActivity implements
         PreferenceFragment.OnPreferenceStartFragmentCallback,
         PreferenceFragment.OnPreferenceStartScreenCallback {
 
@@ -62,15 +58,7 @@ public class TunerActivity extends Activity implements
 
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setTheme(androidx.appcompat.R.style.Theme_AppCompat_DayNight);
-        getWindow().addFlags(WindowManager.LayoutParams.FLAG_DRAWS_SYSTEM_BAR_BACKGROUNDS);
-        requestWindowFeature(Window.FEATURE_NO_TITLE);
         setContentView(R.layout.tuner_activity);
-        Toolbar toolbar = findViewById(R.id.action_bar);
-        if (toolbar != null) {
-            setActionBar(toolbar);
-            toolbar.setVisibility(View.GONE);
-        }
 
         if (getFragmentManager().findFragmentByTag(TAG_TUNER) == null) {
             final String action = getIntent().getAction();
