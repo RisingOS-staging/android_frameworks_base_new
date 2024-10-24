@@ -69,7 +69,7 @@ import com.android.systemui.util.ViewController;
 import com.android.systemui.util.concurrency.DelayableExecutor;
 import com.android.systemui.util.settings.SecureSettings;
 
-import com.android.systemui.clocks.*;
+import com.android.systemui.clocks.ClockStyle;
 
 import kotlinx.coroutines.DisposableHandle;
 
@@ -99,7 +99,6 @@ public class KeyguardClockSwitchController extends ViewController<KeyguardClockS
     private final NotificationIconContainerAlwaysOnDisplayViewBinder mNicViewBinder;
     private FrameLayout mSmallClockFrame; // top aligned clock
     private FrameLayout mLargeClockFrame; // centered clock
-    private View mCustomClock;
 
     @KeyguardClockSwitch.ClockSize
     private int mCurrentClockSize = SMALL;
@@ -262,7 +261,6 @@ public class KeyguardClockSwitchController extends ViewController<KeyguardClockS
         mKeyguardSliceViewController.init();
 
         mStatusArea = mView.findViewById(R.id.keyguard_status_area);
-        mCustomClock = mStatusArea.findViewById(R.id.clock_ls);
 
         if (!MigrateClocksToBlueprint.isEnabled()) {
             mSmallClockFrame = mView.findViewById(R.id.lockscreen_clock_view);
@@ -545,9 +543,6 @@ public class KeyguardClockSwitchController extends ViewController<KeyguardClockS
         if (clock != null) {
             clock.getSmallClock().getEvents().onTimeTick();
             clock.getLargeClock().getEvents().onTimeTick();
-        }
-        if (mEnableCustomClock && mCustomClock != null) {
-        	((ClockStyle) mCustomClock).onTimeChanged();
         }
     }
 

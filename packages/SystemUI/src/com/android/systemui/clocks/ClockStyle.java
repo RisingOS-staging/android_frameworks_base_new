@@ -15,23 +15,19 @@
  */
 package com.android.systemui.clocks;
 
+import android.content.BroadcastReceiver;
 import android.content.Context;
-import android.graphics.Bitmap;
-import android.graphics.BitmapFactory;
-import android.graphics.drawable.Drawable;
+import android.content.Intent;
+import android.content.IntentFilter;
 import android.os.Handler;
 import android.util.AttributeSet;
 import android.view.Gravity;
 import android.view.View;
 import android.view.ViewGroup;
 import android.view.ViewStub;
-import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.RelativeLayout;
 import android.widget.TextClock;
-import android.widget.Toast;
-
-import com.android.settingslib.drawable.CircleFramedDrawable;
 
 import com.android.systemui.res.R;
 import com.android.systemui.Dependency;
@@ -73,7 +69,16 @@ public class ClockStyle extends RelativeLayout implements TunerService.Tunable {
     private final Handler mBurnInProtectionHandler = new Handler();
     private int mCurrentShiftX = 0;
     private int mCurrentShiftY = 0;
-    
+
+    private final BroadcastReceiver mScreenReceiver = new BroadcastReceiver() {
+        @Override
+        public void onReceive(Context context, Intent intent) {
+            if (Intent.ACTION_SCREEN_ON.equals(intent.getAction())) {
+                onTimeChanged();
+            }
+        }
+    };
+
     private final Runnable mBurnInProtectionRunnable = new Runnable() {
         @Override
         public void run() {
@@ -106,6 +111,7 @@ public class ClockStyle extends RelativeLayout implements TunerService.Tunable {
             } else {
                 stopBurnInProtection();
             }
+            onTimeChanged();
         }
     };
 
@@ -117,6 +123,9 @@ public class ClockStyle extends RelativeLayout implements TunerService.Tunable {
         mStatusBarStateController = Dependency.get(StatusBarStateController.class);
         mStatusBarStateController.addCallback(mStatusBarStateListener);
         mStatusBarStateListener.onDozingChanged(mStatusBarStateController.isDozing());
+        IntentFilter filter = new IntentFilter();
+        filter.addAction(Intent.ACTION_SCREEN_ON);
+        mContext.registerReceiver(mScreenReceiver, filter);
     }
 
     @Override
@@ -131,6 +140,7 @@ public class ClockStyle extends RelativeLayout implements TunerService.Tunable {
         mStatusBarStateController.removeCallback(mStatusBarStateListener);
         mTunerService.removeTunable(this);
         mBurnInProtectionHandler.removeCallbacks(mBurnInProtectionRunnable);
+        mContext.unregisterReceiver(mScreenReceiver);
     }
 
     private void startBurnInProtection() {
